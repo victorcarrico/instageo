@@ -28,8 +28,9 @@ def get_client_position(request):
 	"country_code":"-","country_code3":"--"}
 	"""
 
+	client_ip = get_client_ip(request)
 	conn = httplib.HTTPConnection("www.telize.com")
-	conn.request("GET", "/geoip/150.161.219.79") #Ajeitar issaque
+	conn.request("GET", "/geoip/" + client_ip)
 	r = conn.getresponse()
 	data = json.loads(r.read())
 	return data
@@ -46,5 +47,6 @@ def get_photos_pos(request):
 
 def index(request):
 	c = RequestContext(request)
+	c['ip'] = get_client_ip(request)
 	c['photos'], next_ = get_photos_city(request)
 	return render_to_response('index.html', c)
