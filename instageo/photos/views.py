@@ -14,9 +14,13 @@ api = InstagramAPI(client_id=CLIENT_ID, client_secret=CLIENT_SECRET)
 
 	
 def get_client_ip(request):
-	xff = request.META.get('HTTP_X_FORWARDED_FOR')
-	if xff:
-		return xff.split(',')[0]
+	
+	try:
+		xff = request.META.get('HTTP_X_FORWARDED_FOR')
+		if xff:
+			return xff.split(',')[0]
+	except:
+		pass
 	return request.META.get('REMOTE_ADDR')
 
 def get_client_position(request):
