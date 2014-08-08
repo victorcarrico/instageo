@@ -5,9 +5,14 @@
 </head>
 
 <body>
+
+{% if city %}
+	<h1> Last Photos From {{ city }}</h1>
+{% else %}
+{% endif %}
 	
 	{% for photo in photos %}
-		<img src="{{ photo|get_url }}">
+		<a href="http://www.instagram.com/{{ photo|get_user }}"><img src="{{ photo|get_url }}"></a>
 	{% endfor %}
 
 	{{ip}}

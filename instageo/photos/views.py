@@ -14,7 +14,6 @@ api = InstagramAPI(client_id=CLIENT_ID, client_secret=CLIENT_SECRET)
 
 	
 def get_client_ip(request):
-	
 	try:
 		xff = request.META.get('HTTP_X_FORWARDED_FOR')
 		if xff:
@@ -46,11 +45,22 @@ def get_photos_city(request):
 
 def get_photos_pos(request):
 	data = get_client_position(request)
-	places = api.location_search(lat=int(data['latitude']),lng=int(data['longitude']),count=10)
-	#incompleta
+	#places = api.location_search(lat=int(data['latitude']),lng=int(data['longitude']),count=10)
+	lat = data['latitude']
+	lng = data['longitude']
+	medias = api.media_search(count=20, lat=lat, lng=lng)
+
+	return medias
 
 def index(request):
 	c = RequestContext(request)
-	c['ip'] = get_client_ip(request)
-	c['photos'], next_ = get_photos_city(request)
+	#c['ip'] = get_client_ip(request)
+	try:
+		c['city'] = get_client_position(request)['city']
+		c['photos'], next_ = get_photos_city(request)
+	except:
+		try:
+			c['photos'] = get_photos_pos(request)
+		except:
+			pass
 	return render_to_response('index.html', c)
