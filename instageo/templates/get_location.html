@@ -1,0 +1,40 @@
+<!--<html>
+<head>
+
+
+</head>
+
+<body>
+<p id="demo">Click the button to get your coordinates:</p>
+
+<button onclick="getLocation()">Try It</button>
+
+<script>
+var x = document.getElementById("demo");
+
+window.onload = getLocation();
+
+function getLocation() {
+    if (navigator.geolocation) {
+    	var position = navigator.geolocation.getCurrentPosition(showPosition);
+    	$.ajax({
+			type:"POST",
+			url: "/index",
+			data: { lat: position.coords.latitude, lng: position.coords.longitude }
+		});
+        //navigator.geolocation.getCurrentPosition(showPosition);
+        //alert("asduasdsad");
+    } else {
+        x.innerHTML = "Geolocation is not supported by this browser.";
+    }
+}
+function showPosition(position) {
+    x.innerHTML = "Latitude: " + position.coords.latitude +
+    "<br>Longitude: " + position.coords.longitude;
+}
+
+</script>
+</body>
+
+</html>
+-->

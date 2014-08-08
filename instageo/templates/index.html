@@ -1,0 +1,15 @@
+<html>
+<head>
+{% load photo_filters %}
+	
+</head>
+
+<body>
+	
+	{% for photo in photos %}
+		<img src="{{ photo|get_url }}">
+	{% endfor %}
+
+</body>
+
+</html>
