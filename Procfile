@@ -1,0 +1,1 @@
+web: gunicorn instageo.wsgi
