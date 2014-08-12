@@ -24,8 +24,6 @@ class GeoPhotosView(TemplateView):
 
 
 	def get_client_ip(self):
-		return '150.161.219.79' ###### Tirar isso aqui! So pra teste local!
-
 		try:
 			xff = self.request.META.get('HTTP_X_FORWARDED_FOR')
 			if xff:
