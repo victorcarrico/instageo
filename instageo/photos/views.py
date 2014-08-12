@@ -2,65 +2,75 @@ import os
 import json
 import httplib
 
-from django.shortcuts import render_to_response
 from django.template import RequestContext
 
-from instagram.client import InstagramAPI
+from django.views.generic.base import TemplateView
 
+from instagram.client import InstagramAPI
 
 CLIENT_ID = os.environ['CLIENT_ID']
 CLIENT_SECRET = os.environ['CLIENT_SECRET']
 api = InstagramAPI(client_id=CLIENT_ID, client_secret=CLIENT_SECRET)
 
-	
-def get_client_ip(request):
-	try:
-		xff = request.META.get('HTTP_X_FORWARDED_FOR')
-		if xff:
-			return xff.split(',')[0]
-		return request.META.get('REMOTE_ADDR')
-	except:
-		return '150.161.219.79'
 
-def get_client_position(request):
-	"""
-	Get client position according to his ip.
-	Returns:
-	{"timezone":"--","isp":"--","region_code":"--","country":"--",
-	"dma_code":"--","area_code":"--","region":"--","ip":"--","latitude":--,
-	"country_code":"-","country_code3":"--"}
-	"""
+class GeoPhotosView(TemplateView):
 
-	client_ip = get_client_ip(request)
-	conn = httplib.HTTPConnection("www.telize.com")
-	conn.request("GET", "/geoip/" + client_ip)
-	r = conn.getresponse()
-	data = json.loads(r.read())
-	return data
+	template_name='index.html'
 
-def get_photos_city(request):
-	city = get_client_position(request)['city']
-	medias, next_ = api.tag_recent_media(count=20, tag_name=city)
-	return medias, next_
+	def get_context_data(self, **kwargs):
+		context = super(GeoPhotosView, self).get_context_data(**kwargs)
+		context['photos'], context['city'] = self.get_photos_city()
+		return context
 
-def get_photos_pos(request):
-	data = get_client_position(request)
-	#places = api.location_search(lat=int(data['latitude']),lng=int(data['longitude']),count=10)
-	lat = data['latitude']
-	lng = data['longitude']
-	medias = api.media_search(count=20, lat=lat, lng=lng)
 
-	return medias
+	def get_client_ip(self):
+		return '150.161.219.79' ###### Tirar isso aqui! So pra teste local!
 
-def index(request):
-	c = RequestContext(request)
-	#c['ip'] = get_client_ip(request)
-	try:
-		c['city'] = get_client_position(request)['city']
-		c['photos'], next_ = get_photos_city(request)
-	except:
 		try:
-			c['photos'] = get_photos_pos(request)
+			xff = self.request.META.get('HTTP_X_FORWARDED_FOR')
+			if xff:
+				return xff.split(',')[0]
+			return self.request.META.get('REMOTE_ADDR')
 		except:
-			pass
-	return render_to_response('index.html', c)
+			return '150.161.219.79'
+
+
+	def get_client_info(self):
+		"""
+		Get client information according to his ip address.
+		Returns:
+		{"timezone":"--","isp":"--","region_code":"--","country":"--",
+		"dma_code":"--","area_code":"--","region":"--","ip":"--","latitude":--,
+		"country_code":"-","country_code3":"--"}
+		"""
+
+		client_ip = self.get_client_ip()
+		conn = httplib.HTTPConnection("www.telize.com")
+		conn.request("GET", "/geoip/" + client_ip)
+		r = conn.getresponse()
+		data = json.loads(r.read())
+		return data
+
+	def get_photos_city(self):
+		"""
+		First, it tries to get the client city name to get photos by the tag "#city_name".
+		If the client information doesnt have his city name, then we try to get the photos 
+		by his latitude and longitude.
+		"""
+
+		data = self.get_client_info()
+		city = None
+
+		try:
+			city = data['city']
+			photos, next_ = api.tag_recent_media(count=20, tag_name=city)
+		except:
+			print 'Client info does not have city name.'
+			try:
+				lat = data['latitude']
+				lng = data['longitude']
+				photos = api.media_search(count=20, lat=lat, lng=lng)
+			except:
+				print 'Client ip does not have information enough.'
+
+		return photos, city

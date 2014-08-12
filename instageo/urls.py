@@ -1,12 +1,11 @@
+from django.contrib import admin
+
 from django.conf.urls import patterns, include, url
 
-from django.contrib import admin
+from instageo.photos.views import GeoPhotosView
+
 admin.autodiscover()
 
 urlpatterns = patterns('',
-    # Examples:
-    # url(r'^$', 'instageo.views.home', name='home'),
-    url(r'^', 'instageo.photos.views.index', name='index'),
-
-    #url(r'^admin/', include(admin.site.urls)),
+    url(r'^$', GeoPhotosView.as_view(), name='geo-photos'),
 )
